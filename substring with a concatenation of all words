@@ -1,0 +1,43 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+int* findSubstring(char* s, char** words, int wordsSize, int* returnSize) {
+    *returnSize = 0;
+    if (!s || wordsSize == 0) return NULL;
+
+    int sLen = strlen(s);
+    int wordLen = strlen(words[0]);
+    int totalLen = wordLen * wordsSize;
+    if (sLen < totalLen) return NULL;
+
+    int* result = (int*)malloc(sLen * sizeof(int));
+    bool* visited = (bool*)malloc(wordsSize * sizeof(bool));
+
+    for (int i = 0; i <= sLen - totalLen; i++) {
+        memset(visited, 0, wordsSize * sizeof(bool));
+        int matchCount = 0;
+
+        for (int j = 0; j < wordsSize; j++) {
+            int startIdx = i + j * wordLen;
+            bool found = false;
+
+            for (int k = 0; k < wordsSize; k++) {
+                if (!visited[k] && strncmp(s + startIdx, words[k], wordLen) == 0) {
+                    visited[k] = true;
+                    matchCount++;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) break; 
+        }
+
+        if (matchCount == wordsSize) {
+            result[(*returnSize)++] = i;
+        }
+    }
+
+    free(visited);
+    return result;
+}
