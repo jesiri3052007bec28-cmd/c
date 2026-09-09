@@ -1,0 +1,47 @@
+#include <stdlib.h>
+#include <string.h>
+
+int compareChars(const void* a, const void* b) {
+    return (*(char*)a - *(char*)b);
+}
+
+char*** groupAnagrams(char** strs, int strsSize, int* returnSize, int** returnColumnSizes) {
+    *returnSize = 0;
+    if (strsSize == 0) return NULL;
+
+    
+    char*** result = (char***)malloc(strsSize * sizeof(char**));
+    *returnColumnSizes = (int*)malloc(strsSize * sizeof(int));
+    
+    char** sortedStrs = (char**)malloc(strsSize * sizeof(char*));
+    int* visited = (int*)calloc(strsSize, sizeof(int));
+
+
+    for (int i = 0; i < strsSize; i++) {
+        sortedStrs[i] = strdup(strs[i]);
+        qsort(sortedStrs[i], strlen(sortedStrs[i]), sizeof(char), compareChars);
+    }
+
+    for (int i = 0; i < strsSize; i++) {
+        if (visited[i]) continue;
+
+        int count = 0;
+        result[*returnSize] = (char**)malloc(strsSize * sizeof(char*));
+
+        for (int j = i; j < strsSize; j++) {
+            if (!visited[j] && strcmp(sortedStrs[i], sortedStrs[j]) == 0) {
+                result[*returnSize][count++] = strdup(strs[j]);
+                visited[j] = 1;
+            }
+        }
+        
+        (*returnColumnSizes)[*returnSize] = count;
+        (*returnSize)++;
+    }
+
+    for (int i = 0; i < strsSize; i++) free(sortedStrs[i]);
+    free(sortedStrs);
+    free(visited);
+
+    return result;
+}
