@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef struct {
+    char* word;
+    int count;
+} WordFreq;
+int compareStrings(const void* a, const void* b) {
+    return strcmp(*(const char**)a, *(const char**)b);
+}
+int findWordIndex(char* word, WordFreq* uniqueWords, int uniqueSize) {
+    int low = 0, high = uniqueSize - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        int cmp = strcmp(word, uniqueWords[mid].word);
+        if (cmp == 0) return mid;
+        if (cmp < 0) high = mid - 1;
+        else low = mid + 1;
+    }
+    return -1;
+}
+
+int* findSubstring(char* s, char** words, int wordsSize, int* returnSize) {
+    *returnSize = 0;
+    if (!s || wordsSize == 0) return NULL;
+
+    int sLen = strlen(s);
+    int wordLen = strlen(words[0]);
+    int totalLen = wordLen * wordsSize;
+    if (sLen < totalLen) return NULL;
+    qsort(words, wordsSize, sizeof(char*), compareStrings);
+    WordFreq* uniqueWords = (WordFreq*)malloc(wordsSize * sizeof(WordFreq));
+    int uniqueSize = 0;
+    
+    for (int i = 0; i < wordsSize; i++) {
+        if (uniqueSize > 0 && strcmp(words[i], uniqueWords[uniqueSize - 1].word) == 0) {
+            uniqueWords[uniqueSize - 1].count++;
+        } else {
+            uniqueWords[uniqueSize].word = words[i];
+            uniqueWords[uniqueSize].count = 1;
+            uniqueSize++;
+        }
+    }
+    int* result = (int*)malloc(sLen * sizeof(int));
+    int* currentCount = (int*)malloc(uniqueSize * sizeof(int));
+    char* buffer = (char*)malloc((wordLen + 1) * sizeof(char));
+    buffer[wordLen] = '\0';
+    for (int i = 0; i < wordLen; i++) {
+        int left = i, right = i, wordsUsed = 0;
+        memset(currentCount, 0, uniqueSize * sizeof(int));
+
+        while (right + wordLen <= sLen) {
+            strncpy(buffer, s + right, wordLen);
+            right += wordLen;
+
+            int idx = findWordIndex(buffer, uniqueWords, uniqueSize);
+            if (idx != -1) {
+                currentCount[idx]++;
+                wordsUsed++;
+                while (currentCount[idx] > uniqueWords[idx].count) {
+                    strncpy(buffer, s + left, wordLen);
+                    int leftIdx = findWordIndex(buffer, uniqueWords, uniqueSize);
+                    currentCount[leftIdx]--;
+                    wordsUsed--;
+                    left += wordLen;
+                }
+                if (wordsUsed == wordsSize) {
+                    result[(*returnSize)++] = left;
+                }
+            } else {
+                memset(currentCount, 0, uniqueSize * sizeof(int));
+                wordsUsed = 0;
+                left = right;
+            }
+        }
+    }
+    free(uniqueWords);
+    free(currentCount);
+    free(buffer);
+
+    return result;
+}
