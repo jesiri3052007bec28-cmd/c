@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
+
+char* minWindow(char* s, char* t) {
+    int sLen = strlen(s);
+    int tLen = strlen(t);
+    if (sLen == 0 || tLen == 0 || sLen < tLen) return "";
+
+    int targetCounts[128] = {0};
+    int windowCounts[128] = {0};
+    int requiredUnique = 0;
+    for (int i = 0; i < tLen; i++) {
+        if (targetCounts[(int)t[i]] == 0) {
+            requiredUnique++;
+        }
+        targetCounts[(int)t[i]]++;
+    }
+
+    int left = 0, right = 0, formedUnique = 0;
+    int minLen = INT_MAX;
+    int startIdx = 0;
+    while (s[right] != '\0') {
+        char rChar = s[right];
+        windowCounts[(int)rChar]++;
+
+        if (targetCounts[(int)rChar] > 0 && windowCounts[(int)rChar] == targetCounts[(int)rChar]) {
+            formedUnique++;
+        }
+        while (left <= right && formedUnique == requiredUnique) {
+            char lChar = s[left];
+
+            if (right - left + 1 < minLen) {
+                minLen = right - left + 1;
+                startIdx = left;
+            }
+
+            windowCounts[(int)lChar]--;
+            if (targetCounts[(int)lChar] > 0 && windowCounts[(int)lChar] < targetCounts[(int)lChar]) {
+                formedUnique--;
+            }
+            left++;
+        }
+        right++;
+    }
+
+    if (minLen == INT_MAX) return "";
+    s[startIdx + minLen] = '\0';
+    return s + startIdx;
+}
