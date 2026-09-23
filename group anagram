@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+int compareChars(const void* a, const void* b) {
+    return *(const char*)a - *(const char*)b;
+}
+
+char*** groupAnagrams(char** strs, int strsSize, int* returnSize, int** returnColumnSizes) {
+    *returnSize = 0;
+    if (strsSize == 0) return NULL;
+    char** sortedStrs = (char**)malloc(strsSize * sizeof(char*));
+    for (int i = 0; i < strsSize; i++) {
+        sortedStrs[i] = strdup(strs[i]);
+        qsort(sortedStrs[i], strlen(sortedStrs[i]), sizeof(char), compareChars);
+    }
+    char*** result = (char***)malloc(strsSize * sizeof(char**));
+    *returnColumnSizes = (int*)malloc(strsSize * sizeof(int));
+    bool* visited = (bool*)calloc(strsSize, sizeof(bool));
+    int groupCount = 0;
+    for (int i = 0; i < strsSize; i++) {
+        if (visited[i]) continue; 
+        char** currentGroup = (char**)malloc(strsSize * sizeof(char*));
+        int currentGroupSize = 0;
+        currentGroup[currentGroupSize++] = strs[i];
+        visited[i] = true;
+        for (int j = i + 1; j < strsSize; j++) {
+            if (!visited[j] && strcmp(sortedStrs[i], sortedStrs[j]) == 0) {
+                currentGroup[currentGroupSize++] = strs[j];
+                visited[j] = true;
+            }
+        }
+        (*returnColumnSizes)[groupCount] = currentGroupSize;
+        result[groupCount] = currentGroup;
+        groupCount++;
+    }
+
+    *returnSize = groupCount;
+    for (int i = 0; i < strsSize; i++) {
+        free(sortedStrs[i]);
+    }
+    free(sortedStrs);
+    free(visited);
+
+    return result;
+}
