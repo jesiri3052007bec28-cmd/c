@@ -1,0 +1,44 @@
+#include <stdlib.h>
+
+struct Node* copyRandomList(struct Node* head) {
+    if (head == NULL) {
+        return NULL;
+    }
+
+    struct Node* curr = head;
+
+   while (curr != NULL)  {
+        struct Node* clone = (struct Node*)malloc(sizeof(struct Node));
+        clone->val = curr->val;
+        clone->next = curr->next;
+        clone->random = NULL;
+        
+        curr->next = clone;
+        curr = clone->next;
+    }
+
+    curr = head;
+    while (curr != NULL) {
+        if (curr->random != NULL) {
+            curr->next->random = curr->random->next;
+        }
+        curr = curr->next->next;
+    }
+
+    curr = head;
+    struct Node* newHead = head->next;
+    
+    while (curr != NULL) {
+        struct Node* clone = curr->next;
+        curr->next = clone->next; 
+        curr = curr->next;        
+        
+        if (curr != NULL) {
+            clone->next = curr->next; 
+        } else {
+            clone->next = NULL;
+        }
+    }
+
+    return newHead;
+}
