@@ -1,0 +1,84 @@
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define HASH_SIZE 200003
+
+typedef struct HashNode {
+    int val;
+    struct HashNode* next;
+} HashNode;
+
+typedef struct {
+    HashNode* buckets[HASH_SIZE];
+} HashSet;
+
+unsigned int getHash(int val) {
+    unsigned int uval = (unsigned int)val;
+    return uval % HASH_SIZE;
+}
+
+void insert(HashSet* set, int val) {
+    unsigned int h = getHash(val);
+    HashNode* curr = set->buckets[h];
+    while (curr) {
+        if (curr->val == val) return; 
+        curr = curr->next;
+    }
+    HashNode* newNode = (HashNode*)malloc(sizeof(HashNode));
+    newNode->val = val;
+    newNode->next = set->buckets[h];
+    set->buckets[h] = newNode;
+}
+bool contains(HashSet* set, int val) {
+    unsigned int h = getHash(val);
+    HashNode* curr = set->buckets[h];
+    while (curr) {
+        if (curr->val == val) return true;
+        curr = curr->next;
+    }
+    return false;
+}
+
+void freeSet(HashSet* set) {
+    for (int i = 0; i < HASH_SIZE; i++) {
+        HashNode* curr = set->buckets[i];
+        while (curr) {
+            HashNode* temp = curr;
+            curr = curr->next;
+            free(temp);
+        }
+    }
+}
+
+int longestConsecutive(int* nums, int numsSize) {
+    if (numsSize == 0) return 0;
+
+    HashSet* set = (HashSet*)calloc(1, sizeof(HashSet));
+    for (int i = 0; i < numsSize; i++) {
+        insert(set, nums[i]);
+    }
+    
+    int longestStreak = 0;
+    
+    for (int i = 0; i < numsSize; i++) {
+        
+        if (!contains(set, nums[i] - 1)) {
+            int currentNum = nums[i];
+            int currentStreak = 1;
+            
+            while (contains(set, currentNum + 1)) {
+                currentNum += 1;
+                currentStreak += 1;
+            }
+            
+            if (currentStreak > longestStreak) {
+                longestStreak = currentStreak;
+            }
+        }
+    }
+    
+    freeSet(set);
+    free(set);
+    
+    return longestStreak;
+}
