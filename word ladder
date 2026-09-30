@@ -1,0 +1,69 @@
+#include <string.h>
+#include <stdbool.h>
+
+
+bool isAdjacent(const char* word1, const char* word2) {
+    int diffCount = 0;
+    for (int i = 0; word1[i] != '\0'; i++) {
+        if (word1[i] != word2[i]) {
+            diffCount++;
+            if (diffCount > 1) return false;
+        }
+    }
+    return diffCount == 1;
+}
+
+int ladderLength(char* beginWord, char* endWord, char** wordList, int wordListSize) {
+    
+    bool endWordExists = false;
+    for (int i = 0; i < wordListSize; i++) {
+        if (strcmp(wordList[i], endWord) == 0) {
+            endWordExists = true;
+            break;
+        }
+    }
+    if (!endWordExists) {
+        return 0;
+    }
+
+
+    static char queue[5005][12];       
+    static int levels[5005];           
+    static bool visited[5005];
+    
+
+    memset(visited, 0, sizeof(visited));
+    
+    int head = 0, tail = 0;
+
+    
+    strcpy(queue[tail], beginWord);
+    levels[tail] = 1;
+    tail++;
+
+    
+    while (head < tail) {
+        char currentWord[12];
+        strcpy(currentWord, queue[head]);
+        int currentLength = levels[head];
+        head++;
+
+        
+        if (strcmp(currentWord, endWord) == 0) {
+            return currentLength;
+        }
+
+        
+        for (int i = 0; i < wordListSize; i++) {
+            if (!visited[i] && isAdjacent(currentWord, wordList[i])) {
+                visited[i] = true;
+                strcpy(queue[tail], wordList[i]);
+                levels[tail] = currentLength + 1;
+                tail++;
+            }
+        }
+    }
+
+    return 0; 
+}
+
