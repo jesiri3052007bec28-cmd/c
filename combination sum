@@ -1,0 +1,51 @@
+#include <stdlib.h>
+int** result;
+int resSize;
+int resCapacity;
+int* columnSizes;
+
+void backtrack(int* candidates, int candidatesSize, int target, int* currentCombination, int currentSize, int index){
+    if (target == 0) {
+        if (resSize >= resCapacity) {
+            resCapacity *= 2;
+            result = (int**)realloc(result, resCapacity * sizeof(int*));
+            columnSizes = (int*)realloc(columnSizes, resCapacity * sizeof(int));
+        }
+        
+        int* copy = (int*)malloc(currentSize * sizeof(int));
+        for (int i = 0; i < currentSize; i++) {
+            copy[i] = currentCombination[i];
+        }
+        
+        columnSizes[resSize] = currentSize;
+        result[resSize++] = copy;
+        return;
+    }
+    
+    if (target < 0 || index >= candidatesSize) {
+        return;
+    }
+    
+    currentCombination[currentSize] = candidates[index];
+    backtrack(candidates, candidatesSize, target - candidates[index], currentCombination, currentSize + 1, index);
+    
+    
+    backtrack(candidates, candidatesSize, target, currentCombination, currentSize, index + 1);
+}
+
+int** combinationSum(int* candidates, int candidatesSize, int target, int* returnSize, int** returnColumnSizes) {
+    resSize = 0;
+    resCapacity = 150; 
+    result = (int**)malloc(resCapacity * sizeof(int*));
+    columnSizes = (int*)malloc(resCapacity * sizeof(int));
+    
+    int* currentCombination = (int*)malloc((target / 2 + 1) * sizeof(int));
+    
+    backtrack(candidates, candidatesSize, target, currentCombination, 0, 0);
+    
+    free(currentCombination);
+    
+    *returnSize = resSize;
+    *returnColumnSizes = columnSizes;
+    return result;
+}
