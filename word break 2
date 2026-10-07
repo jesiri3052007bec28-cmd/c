@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+char** result;
+int resSize;
+int resCapacity;
+
+bool inDict(char* str, int start, int len, char** wordDict, int wordDictSize) {
+    for (int i = 0; i < wordDictSize; i++) {
+        if (strlen(wordDict[i]) == len && strncmp(str + start, wordDict[i], len) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void backtrack(char* s, int start, char** wordDict, int wordDictSize, char* currentSentence, int currentLen) {
+    int sLen = strlen(s);
+
+    if (start == sLen) {
+        if (resSize >= resCapacity) {
+            resCapacity *= 2;
+            result = (char**)realloc(result, resCapacity * sizeof(char*));
+        }
+        
+        char* validSentence = (char*)malloc((currentLen) * sizeof(char));
+        strncpy(validSentence, currentSentence, currentLen - 1);
+        validSentence[currentLen - 1] = '\0';
+        result[resSize++] = validSentence;
+        return;
+    }
+    for (int end = start + 1; end <= sLen; end++) {
+        int wordLen = end - start;
+        if (inDict(s, start, wordLen, wordDict, wordDictSize)) {
+            int backupLen = currentLen;
+            strncpy(currentSentence + currentLen, s + start, wordLen);
+            currentLen += wordLen;
+            currentSentence[currentLen++] = ' '; 
+            currentSentence[currentLen] = '\0';
+
+            backtrack(s, end, wordDict, wordDictSize, currentSentence, currentLen);
+
+            currentLen = backupLen;
+            currentSentence[currentLen] = '\0';
+        }
+    }
+}
+
+char** wordBreak(char* s, char** wordDict, int wordDictSize, int* returnSize) {
+    resSize = 0;
+    resCapacity = 10;
+    result = (char**)malloc(resCapacity * sizeof(char*));
+
+    char currentSentence[100] = ""; 
+    
+    backtrack(s, 0, wordDict, wordDictSize, currentSentence, 0);
+
+    *returnSize = resSize;
+    return result;
+}
